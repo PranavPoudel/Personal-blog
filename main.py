@@ -74,7 +74,7 @@ async def create_article(article: ArticleCreate):
 async def one_article(id:int):
     conn = get_db()
     cursor = conn.cursor()
-    query = "SELECT id, title, content, published_date, visits FROM articles WHERE ID = (?)"
+    query = "SELECT id, title, content, published_date FROM articles WHERE ID = (?)"
     cursor.execute(query,(id,))
     query_response= cursor.fetchone()
 
@@ -86,7 +86,6 @@ async def one_article(id:int):
         "title": query_response[1],
         "content": query_response[2],
         "published_date": query_response[3],
-        "visits":query_response[4]
     }
     
     #incrementing the visit for individual aritcles i.e visited article
