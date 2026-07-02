@@ -22,7 +22,7 @@ async def verify_token(admin_token : str = Header()):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return admin_token
 
-class userTemplate():
+class userTemplate(BaseModel):
     username: str
     password: str
 
@@ -34,7 +34,7 @@ class ArticleCreate(BaseModel):
 class ArticleUpdate(BaseModel):
     title: str | None= None
     content: str |None= None
-    published_date : str 
+    published_date : str | None = None
 
 app = FastAPI()
 db_conn()
