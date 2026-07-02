@@ -1,4 +1,4 @@
-from fastapi import FastAPI , HTTPException
+from fastapi import FastAPI , HTTPException, Depends, Header
 import sqlite3
 from pydantic import BaseModel
 import datetime
@@ -16,6 +16,15 @@ def get_db():
 
 def now():
     return datetime.datetime.now().isoformat()
+
+async def verify_token(admin_token : str = Header()):
+    if admin_token != "secret_token":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return admin_token
+
+class userTemplate():
+    username: str
+    password: str
 
 class ArticleCreate(BaseModel):
     title: str
@@ -57,7 +66,7 @@ async def all_articles():
    
 
 @app.post("/articles",status_code=201,response_model=ArticleCreate)
-async def create_article(article: ArticleCreate):
+async def create_article(article: ArticleCreate, token:str = Depends(verify_token)):
     conn = get_db()
     cursor = conn.cursor()
     current_date = now()
@@ -99,7 +108,7 @@ async def one_article(id:int):
 
 
 @app.patch ("/articles/{id}", response_model=ArticleUpdate)
-async def UpdateOneArticle(id:int,article : ArticleUpdate):
+async def UpdateOneArticle(id:int,article : ArticleUpdate, token:str=Depends(verify_token)):
     #connecting to database
     conn = get_db()
     cursor = conn.cursor()
@@ -132,7 +141,7 @@ async def UpdateOneArticle(id:int,article : ArticleUpdate):
             }
 
 @app.delete ("/articles/{id}", status_code=204)
-async def Delete_Articles(id:int):
+async def Delete_Articles(id:int, token:str = Depends(verify_token)):
      #connecting to database
     conn = get_db()
     cursor = conn.cursor()
@@ -151,7 +160,7 @@ async def Delete_Articles(id:int):
     return 
 
 @app.get ("/admin/dashboard")
-async def Admin():
+async def Admin(token: str = Depends(verify_token)):
     conn = get_db()
     cursor = conn.cursor()
 
@@ -174,3 +183,11 @@ async def Admin():
         query_result.append(value)
     conn.close()
     return query_result
+
+@app.post ("/login")
+def login(user:userTemplate):
+    if user.username == "Admin" and user.password == "password":
+        return "secret_token"
+    
+
+
