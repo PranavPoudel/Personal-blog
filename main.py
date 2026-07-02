@@ -35,7 +35,7 @@ class ArticleCreate(BaseModel):
 class ArticleUpdate(BaseModel):
     title: str | None= None
     content: str |None= None
-    published_date : str | None = None
+    published_date : datetime.datetime | None = None
 
 app = FastAPI()
 db_conn()
