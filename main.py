@@ -1,4 +1,5 @@
-from fastapi import FastAPI , HTTPException, Depends, Header
+from fastapi import FastAPI , HTTPException, Depends
+from fastapi.security import APIKeyHeader
 import sqlite3
 from pydantic import BaseModel
 import datetime
@@ -16,8 +17,8 @@ def get_db():
 
 def now():
     return datetime.datetime.now().isoformat()
-
-async def verify_token(admin_token : str = Header()):
+api_key_header = APIKeyHeader(name="admin_token", auto_error= False)
+async def verify_token(admin_token : str = Depends(api_key_header)):
     if admin_token != "secret_token":
         raise HTTPException(status_code=401, detail="Unauthorized")
     return admin_token
