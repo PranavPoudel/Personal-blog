@@ -1,7 +1,7 @@
 from fastapi import FastAPI , HTTPException, Depends
 from fastapi.security import APIKeyHeader
 import sqlite3
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import datetime
 
 def db_conn():
@@ -28,12 +28,12 @@ class userTemplate(BaseModel):
     password: str
 
 class ArticleCreate(BaseModel):
-    title: str
-    content: str
+    title: str = Field( min_length= 2)
+    content: str = Field( min_length= 10)
     
 
 class ArticleUpdate(BaseModel):
-    title: str | None= None
+    title: str | None= None 
     content: str |None= None
     published_date : datetime.datetime | None = None
 
@@ -51,7 +51,10 @@ async def all_articles():
     conn = get_db()
     cursor = conn.cursor()
     query = "SELECT id,title,content,published_date FROM articles"
-    cursor.execute(query)
+    try:
+        cursor.execute(query)
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
     query_res = cursor.fetchall()
     query_result = []
     for q in query_res:
@@ -72,8 +75,12 @@ async def create_article(article: ArticleCreate, token:str = Depends(verify_toke
     cursor = conn.cursor()
     current_date = now()
     query = "INSERT INTO articles(title, content, published_date) VALUES (?,?,?)"
-    cursor.execute(query,(article.title, article.content, current_date ))
-    conn.commit()
+    
+    try:
+        cursor.execute(query,(article.title, article.content, current_date ))
+        conn.commit()
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
     conn.close()
     return {
         "title": article.title,
@@ -85,7 +92,10 @@ async def one_article(id:int):
     conn = get_db()
     cursor = conn.cursor()
     query = "SELECT id, title, content, published_date, visits FROM articles WHERE ID = (?)"
-    cursor.execute(query,(id,))
+    try:
+        cursor.execute(query,(id,))
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
     query_response= cursor.fetchone()
 
     if query_response is None:
@@ -115,7 +125,10 @@ async def UpdateOneArticle(id:int,article : ArticleUpdate, token:str=Depends(ver
     cursor = conn.cursor()
     #query to fetch data from database
     query = "SELECT id, title, content, published_date, visits FROM articles WHERE ID = (?)"
-    cursor.execute(query,(id,))
+    try:
+        cursor.execute(query,(id,))
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
     query_response= cursor.fetchone()
 
     if query_response is None:
@@ -134,8 +147,10 @@ async def UpdateOneArticle(id:int,article : ArticleUpdate, token:str=Depends(ver
         query_result['content'] = article.content
     # setting the new dynamic update query
     query = "UPDATE articles SET title = (?), content = (?), published_date = (?) where id = (?)"
-    cursor.execute(query,(query_result['title'],query_result['content'],now(),id))
-    
+    try:
+        cursor.execute(query,(query_result['title'],query_result['content'],now(),id))
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
     conn.commit()
     conn.close()
     return {"message": "Article updated"            
@@ -148,15 +163,21 @@ async def Delete_Articles(id:int, token:str = Depends(verify_token)):
     cursor = conn.cursor()
     #query to fetch data from database
     query = "SELECT id FROM articles WHERE ID = (?)"
-    cursor.execute(query,(id,))
+    try:
+        cursor.execute(query,(id,))
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
     query_response= cursor.fetchone()
 
     if query_response is None:
         raise HTTPException(status_code=404, detail="ID doesn't Exists")
     
     query = "DELETE FROM articles WHERE id = (?)"
-    cursor.execute(query,(id,))
-    conn.commit()
+    try:
+        cursor.execute(query,(id,))
+        conn.commit()
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
     conn.close()
     return 
 
@@ -166,8 +187,10 @@ async def Admin(token: str = Depends(verify_token)):
     cursor = conn.cursor()
 
     query ="SELECT * FROM articles"
-    cursor.execute(query)
-
+    try:
+        cursor.execute(query)
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
     query_response = cursor.fetchall()
     if not query_response:
         raise HTTPException(status_code=404, detail="NO Data in DB")
