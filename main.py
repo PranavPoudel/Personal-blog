@@ -64,6 +64,10 @@ async def create_article(article: ArticleCreate):
     cursor.execute(query,(article.title, article.content, current_date ))
     conn.commit()
     conn.close()
+    return {
+        "title": article.title,
+        "content": article.content
+    }
 
 @app.get("/articles/{id}")
 async def one_article(id:int):
