@@ -25,6 +25,7 @@ class ArticleCreate(BaseModel):
 class ArticleUpdate(BaseModel):
     title: str | None= None
     content: str |None= None
+    published_date : str 
 
 app = FastAPI()
 db_conn()
@@ -114,6 +115,7 @@ async def UpdateOneArticle(id:int,article : ArticleUpdate):
         "id": query_response[0],
         "title": query_response[1],
         "content": query_response[2],
+        "published_date": query_response[3]
     }
     #setting the new values that are given or maybe not
     if article.title is not None:
@@ -121,8 +123,8 @@ async def UpdateOneArticle(id:int,article : ArticleUpdate):
     if article.content is not None:
         query_result['content'] = article.content
     # setting the new dynamic update query
-    query = "UPDATE articles SET title = (?), content = (?) where id = (?)"
-    cursor.execute(query,(query_result['title'],query_result['content'],id))
+    query = "UPDATE articles SET title = (?), content = (?), published_date = (?) where id = (?)"
+    cursor.execute(query,(query_result['title'],query_result['content'],now(),id))
     
     conn.commit()
     conn.close()
