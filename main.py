@@ -55,6 +55,8 @@ async def all_articles():
         cursor.execute(query)
     except sqlite3.Error as e:
         raise HTTPException(status_code=500, detail=f"datebase error - {e}")
+    finally:
+        conn.close()
     query_res = cursor.fetchall()
     query_result = []
     for q in query_res:
@@ -81,6 +83,8 @@ async def create_article(article: ArticleCreate, token:str = Depends(verify_toke
         conn.commit()
     except sqlite3.Error as e:
         raise HTTPException(status_code=500, detail=f"datebase error - {e}")
+    finally:
+        conn.close()
     conn.close()
     return {
         "title": article.title,
@@ -96,6 +100,8 @@ async def one_article(id:int):
         cursor.execute(query,(id,))
     except sqlite3.Error as e:
         raise HTTPException(status_code=500, detail=f"datebase error - {e}")
+    finally:
+        conn.close()
     query_response= cursor.fetchone()
 
     if query_response is None:
@@ -129,6 +135,8 @@ async def UpdateOneArticle(id:int,article : ArticleUpdate, token:str=Depends(ver
         cursor.execute(query,(id,))
     except sqlite3.Error as e:
         raise HTTPException(status_code=500, detail=f"datebase error - {e}")
+    finally:
+        conn.close()
     query_response= cursor.fetchone()
 
     if query_response is None:
@@ -151,6 +159,8 @@ async def UpdateOneArticle(id:int,article : ArticleUpdate, token:str=Depends(ver
         cursor.execute(query,(query_result['title'],query_result['content'],now(),id))
     except sqlite3.Error as e:
         raise HTTPException(status_code=500, detail=f"datebase error - {e}")
+    finally:
+        conn.close()
     conn.commit()
     conn.close()
     return {"message": "Article updated"            
@@ -167,6 +177,8 @@ async def Delete_Articles(id:int, token:str = Depends(verify_token)):
         cursor.execute(query,(id,))
     except sqlite3.Error as e:
         raise HTTPException(status_code=500, detail=f"datebase error - {e}")
+    finally:
+        conn.close()
     query_response= cursor.fetchone()
 
     if query_response is None:
@@ -191,6 +203,8 @@ async def Admin(token: str = Depends(verify_token)):
         cursor.execute(query)
     except sqlite3.Error as e:
         raise HTTPException(status_code=500, detail=f"datebase error - {e}")
+    finally:
+        conn.close()
     query_response = cursor.fetchall()
     if not query_response:
         raise HTTPException(status_code=404, detail="NO Data in DB")
