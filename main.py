@@ -147,3 +147,28 @@ async def Delete_Articles(id:int):
     conn.commit()
     conn.close()
     return 
+
+@app.get ("/admin/dashboard")
+async def Admin():
+    conn = get_db()
+    cursor = conn.cursor()
+
+    query ="SELECT * FROM articles"
+    cursor.execute(query)
+
+    query_response = cursor.fetchall()
+    if not query_response:
+        raise HTTPException(status_code=404, detail="NO Data in DB")
+    
+    query_result = []
+    for q in query_response:
+        value = {
+            "id": q[0],
+            "title" : q[1],
+            "content": q[2],
+            "published_date": q[3],
+            "visits": q[4]
+        }
+        query_result.append(value)
+    conn.close()
+    return query_result
