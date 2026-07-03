@@ -8,11 +8,19 @@ from utils.logger import logger
 router = APIRouter(tags=["Articles"])
 
 @router.get("/articles")
-async def all_articles(conn : sqlite3.Connection = Depends(get_db)):
+async def all_articles(skip:int = 0,limit:int =10, search:str |None=None, conn : sqlite3.Connection = Depends(get_db)):
     cursor = conn.cursor()
     query = "SELECT id,title,content,published_date FROM articles"
+    params = []
+    # if theres a search term , adding a where clause
+    if search:
+        query += " WHERE title LIKE ?"
+        params.append(f"%{search}%")
+    query += " ORDER BY published_date DESC LIMIT ? OFFSET ?"
+    params.extend([limit, skip])
+
     try:
-        cursor.execute(query)
+        cursor.execute(query,params)
         query_res = cursor.fetchall()
         query_result = []
         for q in query_res:
