@@ -1,4 +1,7 @@
 /venv
-/__pycache__
-/routes/__pycache__
+/__pycache__/
+*.pyc
+/routes/__pycache__/
 /routes/__init__
+.env
+*.db
