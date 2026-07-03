@@ -16,8 +16,6 @@ async def lifespan(app:FastAPI):
 
 app = FastAPI(lifespan= lifespan)
 
-#initializing the database
-db_conn()
 
 #attaching the routers
 app.include_router(auth_router)
