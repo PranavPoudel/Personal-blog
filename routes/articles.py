@@ -110,7 +110,6 @@ async def UpdateOneArticle(id:int,article : ArticleUpdate, token:str=Depends(ver
     except sqlite3.Error as e:
         raise HTTPException(status_code=500, detail=f"datebase error - {e}")
 
-    conn.close()
     return {"message": "Article updated"            
             }
 
