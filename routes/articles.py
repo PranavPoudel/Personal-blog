@@ -3,6 +3,7 @@ import sqlite3
 from database import get_db, now
 from models import ArticleCreate, ArticleUpdate
 from auth import verify_token
+from utils.logger import logger
 
 router = APIRouter(tags=["Articles"])
 
@@ -23,8 +24,9 @@ async def all_articles(conn : sqlite3.Connection = Depends(get_db)):
         }
             query_result.append(value)
     except sqlite3.Error as e:
-        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
-
+        logger.error(f"Database error in all_articles: {e}")        
+        raise HTTPException(status_code=500, detail="internal server error")
+        
     return query_result
    
 
@@ -38,7 +40,8 @@ async def create_article(article: ArticleCreate, token:str = Depends(verify_toke
         cursor.execute(query,(article.title, article.content, current_date ))
         conn.commit()
     except sqlite3.Error as e:
-        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
+        logger.error(f"Database error in all_articles: {e}")        
+        raise HTTPException(status_code=500, detail="internal server error")
     return {
         "title": article.title,
         "content": article.content
@@ -69,7 +72,8 @@ async def one_article(id:int, conn: sqlite3.Connection = Depends(get_db)):
         cursor.execute(query,(visit, id))
         conn.commit()
     except sqlite3.Error as e:
-        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
+        logger.error(f"Database error in all_articles: {e}")        
+        raise HTTPException(status_code=500, detail="internal server error")
 
    
     return query_result
@@ -100,7 +104,8 @@ async def UpdateOneArticle(id:int,article : ArticleUpdate, token:str=Depends(ver
         if article.content is not None:
             query_result['content'] = article.content
     except sqlite3.Error as e:
-        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
+        logger.error(f"Database error in all_articles: {e}")        
+        raise HTTPException(status_code=500, detail="internal server error")
     
     # setting the new dynamic update query
     query = "UPDATE articles SET title = (?), content = (?), published_date = (?) where id = (?)"
@@ -108,30 +113,36 @@ async def UpdateOneArticle(id:int,article : ArticleUpdate, token:str=Depends(ver
         cursor.execute(query,(query_result['title'],query_result['content'],now(),id))
         conn.commit()
     except sqlite3.Error as e:
-        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
+        logger.error(f"Database error in all_articles: {e}")        
+        raise HTTPException(status_code=500, detail="internal server error")
 
     return {"message": "Article updated"            
             }
 
-@router.delete ("/articles/{id}", status_code=204)
-async def Delete_Articles(id:int, token:str = Depends(verify_token), conn : sqlite3.Connection = Depends(get_db)):
-     #connecting to database
+@router.delete("/articles/{id}", status_code=204)
+async def Delete_Articles(id: int, token: str = Depends(verify_token), conn: sqlite3.Connection = Depends(get_db)):
     cursor = conn.cursor()
-    #query to fetch data from database
-    query = "SELECT id FROM articles WHERE ID = (?)"
-    try:
-        cursor.execute(query,(id,))
-        query_response= cursor.fetchone()
-    except sqlite3.Error as e:
-        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
-
-    if query_response is None:
-        raise HTTPException(status_code=404, detail="ID doesn't Exists")
     
+    # Check if article exists
+    query = "SELECT id FROM articles WHERE id = (?)"
+    try:
+        cursor.execute(query, (id,))
+        query_response = cursor.fetchone()
+    except sqlite3.Error as e:
+        logger.error(f"Database error in Delete_Articles (SELECT): {e}")        
+        raise HTTPException(status_code=500, detail="Internal server error")
+        
+    # If it doesn't exist, return 404 (Not Found)
+    if query_response is None:
+        raise HTTPException(status_code=404, detail="Article ID doesn't exist")
+    
+    # Delete the article
     query = "DELETE FROM articles WHERE id = (?)"
     try:
-        cursor.execute(query,(id,))
+        cursor.execute(query, (id,))
         conn.commit()
     except sqlite3.Error as e:
-        raise HTTPException(status_code=500, detail=f"datebase error - {e}")
+        logger.error(f"Database error in Delete_Articles (DELETE): {e}")        
+        raise HTTPException(status_code=500, detail="Internal server error")
+        
     return 
