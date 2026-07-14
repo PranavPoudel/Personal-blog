@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Blog</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="#" class="logo" onclick="showHome()">My Blog</a>
+            <div class="nav-links">
+                <a href="#" onclick="showHome()">Home</a>
+                <span id="adminLinks" style="display: none;">
+                    <a href="#" onclick="showDashboard()">Dashboard</a>
+                    <a href="#" onclick="showCreateArticle()">Create Article</a>
+                    <a href="#" onclick="logout()">Logout</a>
+                </span>
+                <a href="#" id="loginLink" onclick="showLogin()">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+        <!-- Home Page - Article List -->
+        <div id="homePage">
+            <h1>All Articles</h1>
+            <div id="articlesList" class="articles-grid"></div>
+        </div>
+
+        <!-- Article Detail Page -->
+        <div id="articlePage" style="display: none;">
+            <article class="article-detail">
+                <h1 id="articleTitle"></h1>
+                <p class="meta" id="articleDate"></p>
+                <div id="articleContent"></div>
+            </article>
+            <button onclick="showHome()" class="btn btn-secondary">← Back to Articles</button>
+        </div>
+
+        <!-- Login Page -->
+        <div id="loginPage" style="display: none;">
+            <div class="form-container">
+                <h1>Admin Login</h1>
+                <div id="loginError" class="error" style="display: none;"></div>
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Create Article Page -->
+        <div id="createPage" style="display: none;">
+            <div class="form-container">
+                <h1>Create New Article</h1>
+                <div id="createError" class="error" style="display: none;"></div>
+                <form onsubmit="handleCreateArticle(event)">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="articleTitleInput" required minlength="2">
+                    </div>
+                    <div class="form-group">
+                        <label>Content</label>
+                        <textarea id="articleContentInput" required minlength="10" rows="10"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Create Article</button>
+                        <button type="button" onclick="showDashboard()" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Article Page -->
+        <div id="editPage" style="display: none;">
+            <div class="form-container">
+                <h1>Edit Article</h1>
+                <div id="editError" class="error" style="display: none;"></div>
+                <form onsubmit="handleEditArticle(event)">
+                    <input type="hidden" id="editArticleId">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="editTitleInput" required minlength="2">
+                    </div>
+                    <div class="form-group">
+                        <label>Content</label>
+                        <textarea id="editContentInput" required minlength="10" rows="10"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Update Article</button>
+                        <button type="button" onclick="showDashboard()" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="dashboardPage" style="display: none;">
+            <h1>Admin Dashboard</h1>
+            <a href="#" onclick="showCreateArticle()" class="btn btn-primary">+ Create New Article</a>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Published Date</th>
+                        <th>Visits</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="dashboardTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
